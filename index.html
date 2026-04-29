@@ -1,0 +1,1771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PMO & Application Support — Bomb Party</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --blue:#ABC8E7;
+  --deep-blue:#5A97D4;
+  --citron:#EAE753;
+  --navy:#0F3053;
+  --navy-2:#173E69;
+  --green:#3DB88B;
+  --amber:#F0B63C;
+  --red:#E15D5D;
+  --charcoal:#2C2C2C;
+  --soft:#F7F9FC;
+  --line:rgba(15,48,83,0.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;color:var(--charcoal);background:var(--soft);-webkit-font-smoothing:antialiased;line-height:1.55}
+
+/* ── Nav ── */
+.nav{position:sticky;top:0;z-index:100;background:rgba(247,249,252,0.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--line);padding:.85rem 2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem}
+.nav .logo{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--navy)}
+.nav .logo span{color:var(--green)}
+.badge{font-size:.52rem;letter-spacing:.14em;text-transform:uppercase;color:var(--charcoal);opacity:.5;background:rgba(234,231,83,0.28);padding:4px 10px;border-radius:100px;font-weight:600}
+.nav-right{font-size:.6rem;color:var(--navy);opacity:.5;letter-spacing:.06em;text-transform:uppercase}
+
+/* ── Tabs ── */
+.tabs{position:sticky;top:50px;z-index:90;background:var(--soft);border-bottom:1px solid var(--line);padding:0 2rem;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab-btn{background:none;border:none;padding:.95rem 1.1rem;font-family:inherit;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--navy);opacity:.42;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .18s;font-weight:500}
+.tab-btn:hover{opacity:.8}
+.tab-btn.active{opacity:1;border-bottom-color:var(--green);font-weight:700}
+.tab-btn .idx{color:var(--green);margin-right:5px;font-weight:700}
+.tab-btn .cbadge{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--green);color:#fff;font-size:.46rem;font-weight:700;margin-left:5px;vertical-align:middle}
+
+/* ── Panels ── */
+.panel{display:none;padding:2.5rem 2rem 6rem;max-width:1060px;margin:0 auto}
+.panel.active{display:block;animation:fade .22s ease}
+@keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* ── Hero ── */
+.hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 100%);color:#fff;padding:2rem 2.2rem 2.2rem;border-radius:18px;margin-bottom:2rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;right:-8%;width:480px;height:480px;background:radial-gradient(circle,rgba(234,231,83,0.11) 0%,transparent 62%);pointer-events:none}
+.hero .eyebrow{font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--citron);margin-bottom:.55rem;font-weight:700}
+.hero h2{font-size:clamp(1.3rem,2.2vw,1.85rem);font-weight:300;line-height:1.2;margin-bottom:.5rem;position:relative}
+.hero h2 .accent{color:var(--citron);font-weight:500}
+.hero p{color:rgba(255,255,255,0.62);font-size:.82rem;max-width:680px;position:relative;margin-bottom:0}
+
+/* ── Card ── */
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:1.6rem;margin-bottom:1.1rem}
+.card-hd{display:flex;align-items:center;gap:.7rem;margin-bottom:1.4rem;padding-bottom:1.1rem;border-bottom:1px solid var(--line)}
+.card-ico{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.ic-green{background:rgba(61,184,139,0.14)}
+.ic-blue{background:rgba(90,151,212,0.14)}
+.ic-amber{background:rgba(240,182,60,0.14)}
+.ic-red{background:rgba(225,93,93,0.12)}
+.ic-navy{background:rgba(15,48,83,0.08)}
+.ic-citron{background:rgba(234,231,83,0.22)}
+.card-hd-text .ct{font-size:.82rem;font-weight:700;color:var(--navy)}
+.card-hd-text .cd{font-size:.68rem;color:var(--navy);opacity:.45;margin-top:.1rem}
+
+/* ── Section divider ── */
+.sdiv{display:flex;align-items:center;gap:.65rem;margin:1.5rem 0 1.1rem}
+.sdiv span{font-size:.56rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--navy);opacity:.38;white-space:nowrap}
+.sdiv::before,.sdiv::after{content:'';flex:1;height:1px;background:var(--line)}
+
+/* ── Grid ── */
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+@media(max-width:660px){.g2,.g3{grid-template-columns:1fr}}
+
+/* ── Fields ── */
+.field{display:flex;flex-direction:column;gap:.38rem;margin-bottom:.95rem}
+.field:last-child{margin-bottom:0}
+.field label{font-size:.58rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--navy);opacity:.65}
+.field label .req{color:var(--red);margin-left:2px}
+.field input,.field select,.field textarea{font-family:'Inter',sans-serif;font-size:.82rem;color:var(--charcoal);background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:.62rem .82rem;transition:border-color .18s,box-shadow .18s;outline:none;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--deep-blue);box-shadow:0 0 0 3px rgba(90,151,212,0.11)}
+.field input::placeholder,.field textarea::placeholder{color:rgba(15,48,83,0.28)}
+.field textarea{resize:vertical;min-height:88px}
+.field select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='6' fill='none'%3E%3Cpath d='M1 1l4.5 4 4.5-4' stroke='%230F3053' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .8rem center}
+.field .hint{font-size:.62rem;color:var(--navy);opacity:.4;margin-top:.18rem}
+
+/* ── Priority pills ── */
+.pri-grp{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.2rem}
+.pri{padding:.4rem .85rem;border-radius:100px;font-size:.6rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;border:1.5px solid transparent;transition:all .16s;user-select:none}
+.pri[data-v="low"]{border-color:rgba(61,184,139,.4);color:var(--green);background:rgba(61,184,139,.07)}
+.pri[data-v="medium"]{border-color:rgba(240,182,60,.5);color:#B8861F;background:rgba(240,182,60,.08)}
+.pri[data-v="high"]{border-color:rgba(225,93,93,.4);color:var(--red);background:rgba(225,93,93,.07)}
+.pri[data-v="critical"]{border-color:rgba(15,48,83,.45);color:var(--navy);background:rgba(15,48,83,.06)}
+.pri.sel[data-v="low"]{background:var(--green);color:#fff;border-color:var(--green)}
+.pri.sel[data-v="medium"]{background:var(--amber);color:#fff;border-color:var(--amber)}
+.pri.sel[data-v="high"]{background:var(--red);color:#fff;border-color:var(--red)}
+.pri.sel[data-v="critical"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+/* ── Radio / Checkbox ── */
+.rg,.cg{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.2rem}
+.ro,.co{display:flex;align-items:center;gap:.45rem;padding:.4rem .82rem;border:1.5px solid var(--line);border-radius:100px;cursor:pointer;transition:all .16s;font-size:.72rem;color:var(--navy);font-weight:500;user-select:none}
+.ro:hover,.co:hover{border-color:var(--deep-blue);background:rgba(90,151,212,.05)}
+.ro input,.co input{width:13px;height:13px;accent-color:var(--green);cursor:pointer;flex-shrink:0}
+.ro.sel,.co.sel{border-color:var(--green);background:rgba(61,184,139,.08)}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:.55rem;background:var(--navy);color:#fff;border:none;border-radius:10px;padding:.78rem 1.7rem;font-family:'Inter',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.btn:hover{background:var(--navy-2);transform:translateY(-1px);box-shadow:0 6px 20px rgba(15,48,83,.22)}
+.btn .arr{transition:transform .2s}
+.btn:hover .arr{transform:translateX(4px)}
+.btn-ghost{display:inline-flex;align-items:center;gap:.5rem;background:transparent;color:var(--navy);border:1.5px solid var(--line);border-radius:10px;padding:.72rem 1.35rem;font-family:'Inter',sans-serif;font-size:.7rem;font-weight:600;cursor:pointer;transition:all .18s}
+.btn-ghost:hover{border-color:var(--deep-blue);background:rgba(90,151,212,.05)}
+.actions{display:flex;align-items:center;gap:.85rem;margin-top:1.8rem;flex-wrap:wrap}
+
+/* ── File drop ── */
+.fdrop{border:2px dashed rgba(15,48,83,.16);border-radius:10px;padding:1.3rem;text-align:center;cursor:pointer;transition:all .18s;background:rgba(15,48,83,.015)}
+.fdrop:hover{border-color:var(--deep-blue);background:rgba(90,151,212,.04)}
+.fdrop input{display:none}
+.fdrop .fdi{font-size:1.5rem;margin-bottom:.4rem}
+.fdrop .fdt{font-size:.7rem;color:var(--navy);opacity:.5;font-weight:500}
+.fdrop .fdh{font-size:.6rem;color:var(--navy);opacity:.3;margin-top:.2rem}
+
+/* ── Req legend ── */
+.rl{font-size:.6rem;color:var(--navy);opacity:.4;margin-bottom:1.4rem}
+.rl span{color:var(--red)}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:1.8rem;right:1.8rem;background:var(--navy);color:#fff;padding:.9rem 1.3rem;border-radius:12px;font-size:.76rem;display:none;align-items:center;gap:.7rem;box-shadow:0 8px 32px rgba(15,48,83,.28);z-index:9999;max-width:340px;animation:sup .28s ease}
+.toast.show{display:flex}
+.toast .tt{font-weight:700;font-size:.72rem;color:var(--citron);margin-bottom:.08rem}
+.toast .tb{opacity:.7;font-size:.68rem;line-height:1.4}
+@keyframes sup{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* ── Log ── */
+.log-item{background:#fff;border:1px solid var(--line);border-radius:11px;padding:.95rem 1.15rem;margin-bottom:.6rem;display:grid;grid-template-columns:auto 1fr auto;gap:.9rem;align-items:center;animation:fade .2s ease}
+.log-type{font-size:.54rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:100px;white-space:nowrap}
+.lt-proj{background:rgba(90,151,212,.12);color:#2D6FA8}
+.lt-cr{background:rgba(240,182,60,.14);color:#8B6513}
+.lt-app{background:rgba(61,184,139,.12);color:var(--green)}
+.lt-enh{background:rgba(234,231,83,.25);color:#7A7910}
+.lt-res{background:rgba(15,48,83,.08);color:var(--navy)}
+.lt-ua{background:rgba(225,93,93,.11);color:#C04040}
+.log-sum{font-size:.77rem;color:var(--charcoal);font-weight:500}
+.log-meta{font-size:.62rem;color:var(--navy);opacity:.4;margin-top:.12rem}
+.log-time{font-size:.6rem;color:var(--navy);opacity:.38;white-space:nowrap;text-align:right}
+.empty-st{text-align:center;padding:3rem 1rem;color:var(--navy);opacity:.3}
+.empty-st .ei{font-size:2.4rem;margin-bottom:.65rem}
+.empty-st p{font-size:.78rem;font-weight:500;line-height:1.6}
+
+/* ── RAG ── */
+.rag{display:inline-flex;align-items:center;gap:5px;font-size:.57rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding:3px 9px;border-radius:100px}
+.rag::before{content:'';width:6px;height:6px;border-radius:50%}
+.rag.green{background:rgba(61,184,139,.12);color:var(--green)}.rag.green::before{background:var(--green)}
+.rag.amber{background:rgba(240,182,60,.14);color:#B8861F}.rag.amber::before{background:var(--amber)}
+.rag.red{background:rgba(225,93,93,.12);color:var(--red)}.rag.red::before{background:var(--red)}
+
+/* ── Password Gate ── */
+.pw-overlay{position:fixed;inset:0;background:rgba(10,25,48,.65);backdrop-filter:blur(8px);z-index:9500;display:none;align-items:center;justify-content:center;padding:1.5rem}
+.pw-overlay.show{display:flex;animation:fadeIn .2s ease}
+.pw-modal{background:#fff;border-radius:18px;width:100%;max-width:380px;overflow:hidden;box-shadow:0 24px 80px rgba(10,25,48,.3)}
+.pw-head{background:linear-gradient(135deg,var(--navy),var(--navy-2));padding:1.8rem 2rem;text-align:center}
+.pw-head .pw-icon{font-size:1.8rem;margin-bottom:.6rem}
+.pw-head h3{color:#fff;font-size:1rem;font-weight:500;margin-bottom:.2rem}
+.pw-head p{color:rgba(255,255,255,.5);font-size:.72rem}
+.pw-body{padding:1.6rem 2rem 2rem}
+.pw-input-wrap{position:relative;margin-bottom:.75rem}
+.pw-input-wrap input{font-family:'Inter',sans-serif;font-size:.95rem;width:100%;border:1.5px solid var(--line);border-radius:10px;padding:.75rem 2.8rem .75rem 1rem;outline:none;letter-spacing:.12em;transition:border-color .18s,box-shadow .18s;text-align:center}
+.pw-input-wrap input:focus{border-color:var(--deep-blue);box-shadow:0 0 0 3px rgba(90,151,212,.11)}
+.pw-toggle{position:absolute;right:.8rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--navy);opacity:.4;font-size:.85rem;padding:0}
+.pw-error{font-size:.68rem;color:var(--red);text-align:center;margin-bottom:.6rem;min-height:1em;font-weight:600}
+.pw-hint{font-size:.62rem;color:var(--navy);opacity:.38;text-align:center;margin-top:.6rem}
+.pw-set-note{background:rgba(234,231,83,.18);border:1px solid rgba(234,231,83,.4);border-radius:9px;padding:.7rem .9rem;font-size:.68rem;color:var(--navy);margin-bottom:1rem;line-height:1.5}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+
+/* ── Jira Config Modal ── */
+.jira-status{display:inline-flex;align-items:center;gap:6px;font-size:.58rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:5px 11px;border-radius:100px;cursor:pointer;border:1.5px solid transparent;transition:all .18s}
+.jira-status.off{background:rgba(15,48,83,.07);color:var(--navy);opacity:.55;border-color:rgba(15,48,83,.12)}
+.jira-status.on{background:rgba(61,184,139,.12);color:var(--green);border-color:rgba(61,184,139,.3)}
+.jira-status .jdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.jira-status.off .jdot{background:rgba(15,48,83,.35)}
+.jira-status.on .jdot{background:var(--green)}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(10,25,48,.55);backdrop-filter:blur(6px);z-index:9000;display:none;align-items:center;justify-content:center;padding:1.5rem}
+.modal-overlay.show{display:flex;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{background:#fff;border-radius:18px;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(10,25,48,.25)}
+.modal-head{background:linear-gradient(135deg,var(--navy),var(--navy-2));color:#fff;padding:1.6rem 2rem;border-radius:18px 18px 0 0;position:relative}
+.modal-head .mh-eyebrow{font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--citron);margin-bottom:.4rem;font-weight:700}
+.modal-head h3{font-size:1.15rem;font-weight:300;margin-bottom:.2rem}
+.modal-head p{font-size:.72rem;color:rgba(255,255,255,.55);margin:0}
+.modal-close{position:absolute;top:1.1rem;right:1.2rem;background:rgba(255,255,255,.12);border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.modal-close:hover{background:rgba(255,255,255,.22)}
+.modal-body{padding:1.8rem 2rem}
+.modal-section{margin-bottom:1.6rem}
+.modal-section-title{font-size:.58rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--navy);opacity:.45;margin-bottom:.9rem;display:flex;align-items:center;gap:.5rem}
+.modal-section-title::after{content:'';flex:1;height:1px;background:var(--line)}
+.mfield{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.85rem}
+.mfield label{font-size:.58rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--navy);opacity:.65}
+.mfield input,.mfield select{font-family:'Inter',sans-serif;font-size:.82rem;color:var(--charcoal);background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:.6rem .8rem;outline:none;width:100%;transition:border-color .18s,box-shadow .18s}
+.mfield input:focus,.mfield select:focus{border-color:var(--deep-blue);box-shadow:0 0 0 3px rgba(90,151,212,.11)}
+.mfield input::placeholder{color:rgba(15,48,83,.28)}
+.mfield .mhint{font-size:.6rem;color:var(--navy);opacity:.38;margin-top:.15rem}
+.mg2{display:grid;grid-template-columns:repeat(2,1fr);gap:.85rem}
+@media(max-width:520px){.mg2{grid-template-columns:1fr}}
+.itype-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.65rem}
+@media(max-width:520px){.itype-grid{grid-template-columns:1fr}}
+.itype-row{display:flex;align-items:center;gap:.6rem}
+.itype-row .itr-label{font-size:.7rem;color:var(--navy);font-weight:500;min-width:130px;flex-shrink:0}
+.itype-row select{flex:1;font-family:'Inter',sans-serif;font-size:.75rem;color:var(--charcoal);border:1.5px solid var(--line);border-radius:8px;padding:.45rem .7rem;outline:none;appearance:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%230F3053' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right .6rem center #fff;cursor:pointer;transition:border-color .15s}
+.itype-row select:focus{border-color:var(--deep-blue);outline:none}
+.modal-foot{padding:1.2rem 2rem 1.6rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;border-top:1px solid var(--line)}
+.btn-test{display:inline-flex;align-items:center;gap:.5rem;background:transparent;border:1.5px solid var(--line);color:var(--navy);border-radius:9px;padding:.65rem 1.2rem;font-family:'Inter',sans-serif;font-size:.7rem;font-weight:600;cursor:pointer;transition:all .18s}
+.btn-test:hover{border-color:var(--deep-blue);background:rgba(90,151,212,.05)}
+.test-result{font-size:.68rem;font-weight:600;padding:5px 10px;border-radius:100px;display:none}
+.test-result.ok{display:inline-flex;align-items:center;gap:5px;background:rgba(61,184,139,.12);color:var(--green)}
+.test-result.fail{display:inline-flex;align-items:center;gap:5px;background:rgba(225,93,93,.1);color:var(--red)}
+
+/* ── Confirmation Modal ── */
+.confirm-overlay{position:fixed;inset:0;background:rgba(10,25,48,.6);backdrop-filter:blur(8px);z-index:9100;display:none;align-items:center;justify-content:center;padding:1.5rem}
+.confirm-overlay.show{display:flex;animation:fadeIn .22s ease}
+.confirm-modal{background:#fff;border-radius:20px;width:100%;max-width:520px;overflow:hidden;box-shadow:0 28px 90px rgba(10,25,48,.28)}
+.confirm-top{background:linear-gradient(135deg,var(--navy),var(--navy-2));padding:2.2rem 2rem 1.8rem;text-align:center;position:relative}
+.confirm-top::before{content:'';position:absolute;top:-40%;right:-10%;width:300px;height:300px;background:radial-gradient(circle,rgba(234,231,83,.13) 0%,transparent 60%);pointer-events:none}
+.confirm-icon{width:60px;height:60px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin:0 auto 1rem;position:relative}
+.confirm-top h3{color:#fff;font-size:1.25rem;font-weight:300;margin-bottom:.3rem}
+.confirm-top p{color:rgba(255,255,255,.55);font-size:.78rem}
+.confirm-body{padding:1.6rem 2rem}
+.confirm-ticket{display:flex;align-items:center;justify-content:space-between;background:rgba(90,151,212,.07);border:1.5px solid rgba(90,151,212,.2);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.2rem}
+.confirm-ticket .ct-key{font-size:1.1rem;font-weight:700;color:var(--navy)}
+.confirm-ticket .ct-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--navy);opacity:.45;margin-bottom:.2rem}
+.confirm-ticket a{font-size:.72rem;font-weight:600;color:var(--deep-blue);text-decoration:none;background:rgba(90,151,212,.12);padding:5px 12px;border-radius:100px}
+.confirm-ticket a:hover{background:rgba(90,151,212,.22)}
+.confirm-fields{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:1.4rem}
+.cf-item .cf-label{font-size:.55rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--navy);opacity:.4;margin-bottom:.2rem}
+.cf-item .cf-val{font-size:.78rem;color:var(--charcoal);font-weight:500}
+.confirm-note{background:rgba(61,184,139,.07);border:1px solid rgba(61,184,139,.2);border-radius:10px;padding:.85rem 1rem;font-size:.72rem;color:var(--navy);opacity:.7;line-height:1.5;margin-bottom:1.2rem}
+.confirm-close{width:100%;background:var(--navy);color:#fff;border:none;border-radius:10px;padding:.82rem;font-family:'Inter',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background .18s}
+.confirm-close:hover{background:var(--navy-2)}
+.jira-link{display:inline-flex;align-items:center;gap:4px;font-size:.6rem;font-weight:700;color:var(--deep-blue);text-decoration:none;background:rgba(90,151,212,.1);padding:2px 8px;border-radius:100px;margin-top:3px;transition:background .15s}
+.jira-link:hover{background:rgba(90,151,212,.2)}
+.jira-spinning{display:inline-flex;align-items:center;gap:5px;font-size:.62rem;color:var(--navy);opacity:.45;margin-top:3px}
+.spin{display:inline-block;width:10px;height:10px;border:2px solid rgba(15,48,83,.2);border-top-color:var(--deep-blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- ── Nav ── -->
+<nav class="nav">
+  <div style="display:flex;align-items:center;gap:.9rem">
+    <div class="logo">BOMB<span>PARTY</span></div>
+    <div class="badge">PMO &amp; App Support Intake</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:.85rem">
+    <div class="nav-right" id="navDate"></div>
+    <div class="jira-status off" id="jiraStatusBtn" onclick="openJiraModal()" title="Configure Jira Integration">
+      <span class="jdot"></span>
+      <span id="jiraStatusTxt">Jira: Not Configured</span>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Password Gate Modal ── -->
+<div class="pw-overlay" id="pwModal">
+  <div class="pw-modal">
+    <div class="pw-head">
+      <div class="pw-icon">🔒</div>
+      <h3 id="pw-head-title">Admin Access Required</h3>
+      <p id="pw-head-sub">Enter the admin password to access Jira settings</p>
+    </div>
+    <div class="pw-body">
+      <div id="pw-set-note" class="pw-set-note" style="display:none">
+        🛡️ <strong>First-time setup:</strong> Set an admin password to protect these settings. Anyone with the form link will need this password to change Jira credentials.
+      </div>
+      <div class="pw-error" id="pw-error"></div>
+      <div class="pw-input-wrap">
+        <input type="password" id="pw-input" placeholder="Enter password" onkeydown="if(event.key==='Enter')checkPassword()" />
+        <button class="pw-toggle" onclick="togglePwVis()" title="Show/hide">👁</button>
+      </div>
+      <button class="btn" style="width:100%;justify-content:center" onclick="checkPassword()" id="pw-btn">Unlock →</button>
+      <div class="pw-hint" id="pw-hint">Contact your PMO admin if you've forgotten the password.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Jira Config Modal ── -->
+<div class="modal-overlay" id="jiraModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="mh-eyebrow">Integration Settings</div>
+      <h3>Jira Cloud Configuration</h3>
+      <p>Tickets are created automatically on every form submission.</p>
+      <button class="modal-close" onclick="closeJiraModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="modal-section">
+        <div class="modal-section-title">Credentials</div>
+        <div class="mg2">
+          <div class="mfield">
+            <label>Jira Domain</label>
+            <input id="cfg_domain" placeholder="yourcompany" />
+            <div class="mhint">Just the subdomain — e.g. "bombparty" for bombparty.atlassian.net</div>
+          </div>
+          <div class="mfield">
+            <label>Project Key</label>
+            <input id="cfg_project" placeholder="PMO" style="text-transform:uppercase" />
+            <div class="mhint">The key shown before ticket numbers, e.g. PMO, BP, OPS</div>
+          </div>
+        </div>
+        <div class="mfield">
+          <label>Proxy URL <span style="font-weight:400;opacity:.5;font-size:.62rem;text-transform:none;letter-spacing:0">(your Cloudflare Worker URL)</span></label>
+          <input type="url" id="cfg_proxy" placeholder="https://your-worker.workers.dev" />
+          <div class="mhint">Credentials are stored securely in the Worker — not here.</div>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">Issue Type Mapping</div>
+        <div class="itype-grid">
+          <div class="itype-row">
+            <span class="itr-label">📋 Project Request</span>
+            <select id="cfg_type_pr">
+              <option value="Epic">Epic</option>
+              <option value="Task">Task</option>
+              <option value="Story">Story</option>
+            </select>
+          </div>
+          <div class="itype-row">
+            <span class="itr-label">🔄 Change Request</span>
+            <select id="cfg_type_cr">
+              <option value="Task">Task</option>
+              <option value="Change">Change</option>
+              <option value="Story">Story</option>
+            </select>
+          </div>
+          <div class="itype-row">
+            <span class="itr-label">⚙️ App Support</span>
+            <select id="cfg_type_as">
+              <option value="Bug">Bug</option>
+              <option value="Task">Task</option>
+              <option value="Incident">Incident</option>
+            </select>
+          </div>
+          <div class="itype-row">
+            <span class="itr-label">✨ Enhancement</span>
+            <select id="cfg_type_en">
+              <option value="Story">Story</option>
+              <option value="Task">Task</option>
+              <option value="Improvement">Improvement</option>
+            </select>
+          </div>
+          <div class="itype-row">
+            <span class="itr-label">👥 Resource Request</span>
+            <select id="cfg_type_rr">
+              <option value="Task">Task</option>
+              <option value="Story">Story</option>
+              <option value="Epic">Epic</option>
+            </select>
+          </div>
+          <div class="itype-row">
+            <span class="itr-label">🔐 User Access</span>
+            <select id="cfg_type_ua">
+              <option value="Task">Task</option>
+              <option value="Service Request">Service Request</option>
+              <option value="Story">Story</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="saveJiraConfig()">Save Configuration →</button>
+      <button class="btn-test" onclick="testJiraConnection()">🔌 Test Connection</button>
+      <span class="test-result" id="testResult"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Tabs ── -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="sw(0)" id="t0"><span class="idx">01</span>Project Request</button>
+  <button class="tab-btn" onclick="sw(1)" id="t1"><span class="idx">02</span>Change Request</button>
+  <button class="tab-btn" onclick="sw(2)" id="t2"><span class="idx">03</span>App Support</button>
+  <button class="tab-btn" onclick="sw(3)" id="t3"><span class="idx">04</span>Enhancement</button>
+  <button class="tab-btn" onclick="sw(4)" id="t4"><span class="idx">05</span>Resource Request</button>
+  <button class="tab-btn" onclick="sw(5)" id="t5"><span class="idx">06</span>User Access</button>
+  <button class="tab-btn" onclick="sw(6)" id="t6"><span class="idx">07</span>Submissions <span class="cbadge" id="subCount">0</span></button>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PANEL 0 — PROJECT REQUEST
+════════════════════════════════════════ -->
+<div class="panel active" id="p0">
+  <div class="hero">
+    <div class="eyebrow">PMO · Project Request</div>
+    <h2>Submit a <span class="accent">New Project</span> for PMO Review</h2>
+    <p>Use this form to formally request a new initiative. All submissions are reviewed by the PMO weekly and prioritized against the active portfolio.</p>
+  </div>
+  <p class="rl"><span>*</span> Required fields</p>
+
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-ico ic-blue">🗂️</div>
+      <div class="card-hd-text"><div class="ct">Project Overview</div><div class="cd">Define scope, goals, and sponsorship</div></div>
+    </div>
+
+    <div class="g2">
+      <div class="field"><label>Requestor Name <span class="req">*</span></label><input id="pr_rname" placeholder="Full name" /></div>
+      <div class="field"><label>Requestor Email <span class="req">*</span></label><input type="email" id="pr_remail" placeholder="you@bombparty.com" /></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Project Name <span class="req">*</span></label><input id="pr_title" placeholder="What should we call this initiative?" /></div>
+      <div class="field"><label>Executive Sponsor</label><input id="pr_sponsor" placeholder="Name of sponsoring leader" /></div>
+    </div>
+    <div class="g3">
+      <div class="field"><label>Business Unit / Team <span class="req">*</span></label>
+        <select id="pr_bu">
+          <option value="">Select</option>
+          <option>Product</option><option>Engineering</option><option>Design</option>
+          <option>Marketing</option><option>Operations</option><option>Finance</option>
+          <option>Legal / Compliance</option><option>HR / People</option>
+          <option>Executive</option><option>Cross-functional</option>
+        </select>
+      </div>
+      <div class="field"><label>Project Type <span class="req">*</span></label>
+        <select id="pr_type">
+          <option value="">Select</option>
+          <option>New Product / Feature</option><option>Platform / Infrastructure</option>
+          <option>Process Improvement</option><option>Compliance / Regulatory</option>
+          <option>Integration / API</option><option>Data / Analytics</option>
+          <option>Internal Tool / Automation</option><option>R&amp;D / Innovation</option>
+          <option>Vendor / Partner</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field"><label>Delivery Methodology</label>
+        <select id="pr_method">
+          <option value="">Select</option>
+          <option>Agile / Scrum</option><option>Agile / Kanban</option><option>SAFe</option>
+          <option>Waterfall</option><option>Hybrid</option><option>TBD</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field"><label>Priority <span class="req">*</span></label>
+      <div class="pri-grp" id="pr_pri">
+        <div class="pri" data-v="low" onclick="selPri('pr_pri',this)">🟢 Low</div>
+        <div class="pri" data-v="medium" onclick="selPri('pr_pri',this)">🟡 Medium</div>
+        <div class="pri" data-v="high" onclick="selPri('pr_pri',this)">🔴 High</div>
+        <div class="pri" data-v="critical" onclick="selPri('pr_pri',this)">⚡ Critical / Strategic</div>
+      </div>
+    </div>
+
+    <div class="sdiv"><span>Business Case</span></div>
+
+    <div class="field"><label>Problem / Opportunity Statement <span class="req">*</span></label>
+      <textarea id="pr_problem" placeholder="What challenge or opportunity is this project addressing? Who is impacted and how?"></textarea></div>
+
+    <div class="field"><label>Goals & Success Metrics <span class="req">*</span></label>
+      <textarea id="pr_goals" placeholder="What does success look like? Include measurable KPIs or OKRs where possible (e.g. reduce churn by 8%, ship by Q3 2026)."></textarea></div>
+
+    <div class="g2">
+      <div class="field"><label>In-Scope</label>
+        <textarea id="pr_in" style="min-height:72px" placeholder="What's included?"></textarea></div>
+      <div class="field"><label>Out-of-Scope</label>
+        <textarea id="pr_out" style="min-height:72px" placeholder="What are we explicitly NOT doing?"></textarea></div>
+    </div>
+
+    <div class="field"><label>Assumptions &amp; Constraints</label>
+      <textarea id="pr_assumptions" style="min-height:68px" placeholder="Known assumptions, regulatory constraints, technical limitations, or dependencies..."></textarea></div>
+
+    <div class="sdiv"><span>Timeline & Resources</span></div>
+
+    <div class="g3">
+      <div class="field"><label>Requested Start Date</label><input type="date" id="pr_start" /></div>
+      <div class="field"><label>Target Go-Live / Completion</label><input type="date" id="pr_end" /></div>
+      <div class="field"><label>Estimated Duration</label>
+        <select id="pr_dur">
+          <option value="">Select</option>
+          <option>&lt; 2 weeks</option><option>2–4 weeks</option><option>1–2 months</option>
+          <option>2–3 months</option><option>3–6 months</option><option>6–12 months</option>
+          <option>12+ months</option>
+        </select>
+      </div>
+    </div>
+    <div class="g3">
+      <div class="field"><label>Budget Range (if known)</label>
+        <select id="pr_budget">
+          <option value="">Select</option>
+          <option>No budget needed</option><option>&lt; $10,000</option>
+          <option>$10k – $50k</option><option>$50k – $100k</option>
+          <option>$100k – $250k</option><option>$250k+</option><option>TBD</option>
+        </select>
+      </div>
+      <div class="field"><label>Estimated Team Size</label>
+        <select id="pr_team">
+          <option value="">Select</option>
+          <option>1 (solo)</option><option>2–3</option><option>4–6</option>
+          <option>7–10</option><option>10+</option>
+        </select>
+      </div>
+      <div class="field"><label>Key Stakeholders / Teams</label>
+        <input id="pr_stake" placeholder="e.g. Product, Legal, Engineering" /></div>
+    </div>
+
+    <div class="field"><label>Known Risks or Blockers</label>
+      <textarea id="pr_risks" style="min-height:68px" placeholder="List any risks, blockers, or dependencies that could impact delivery..."></textarea></div>
+
+    <div class="field"><label>Supporting Documents (optional)</label>
+      <div class="fdrop" onclick="document.getElementById('pr_file').click()">
+        <input type="file" id="pr_file" accept=".pdf,.pptx,.docx,.xlsx,.png,.jpg" onchange="fLabel(this,'pr_flbl')"/>
+        <div class="fdi">📎</div>
+        <div class="fdt" id="pr_flbl">Attach brief, PRD, deck, or any supporting doc</div>
+        <div class="fdh">PDF, PPTX, DOCX, XLSX · max 20MB</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn" onclick="sub('project_request')">Submit to PMO <span class="arr">→</span></button>
+      <button class="btn-ghost" onclick="clr('pr_')">Clear Form</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PANEL 1 — CHANGE REQUEST
+════════════════════════════════════════ -->
+<div class="panel" id="p1">
+  <div class="hero">
+    <div class="eyebrow">PMO · Change Request</div>
+    <h2>Request a <span class="accent">Scope, Schedule, or Budget</span> Change</h2>
+    <p>All changes to active projects — scope, timeline, cost, or resources — require a formal change request reviewed and approved by the PMO.</p>
+  </div>
+  <p class="rl"><span>*</span> Required fields</p>
+
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-ico ic-amber">🔄</div>
+      <div class="card-hd-text"><div class="ct">Change Request Details</div><div class="cd">Linked to an active project or initiative</div></div>
+    </div>
+
+    <div class="g2">
+      <div class="field"><label>Requestor Name <span class="req">*</span></label><input id="cr_rname" placeholder="Full name" /></div>
+      <div class="field"><label>Requestor Email <span class="req">*</span></label><input type="email" id="cr_remail" placeholder="you@bombparty.com" /></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Project / Initiative Name <span class="req">*</span></label><input id="cr_project" placeholder="Name of the active project" /></div>
+      <div class="field"><label>Project Manager / Owner</label><input id="cr_pm" placeholder="Current PM or owner" /></div>
+    </div>
+
+    <div class="field"><label>Change Category <span class="req">*</span></label>
+      <div class="rg" id="cr_cat">
+        <label class="ro" onclick="selR('cr_cat',this)"><input type="radio" name="cr_cat" value="Scope Change"/> 📐 Scope Change</label>
+        <label class="ro" onclick="selR('cr_cat',this)"><input type="radio" name="cr_cat" value="Schedule Change"/> 📅 Schedule Change</label>
+        <label class="ro" onclick="selR('cr_cat',this)"><input type="radio" name="cr_cat" value="Budget Change"/> 💰 Budget Change</label>
+        <label class="ro" onclick="selR('cr_cat',this)"><input type="radio" name="cr_cat" value="Resource Change"/> 👥 Resource Change</label>
+        <label class="ro" onclick="selR('cr_cat',this)"><input type="radio" name="cr_cat" value="Risk Response"/> ⚠️ Risk Response</label>
+        <label class="ro" onclick="selR('cr_cat',this)"><input type="radio" name="cr_cat" value="Other"/> Other</label>
+      </div>
+    </div>
+
+    <div class="field"><label>Priority / Urgency <span class="req">*</span></label>
+      <div class="pri-grp" id="cr_pri">
+        <div class="pri" data-v="low" onclick="selPri('cr_pri',this)">🟢 Low</div>
+        <div class="pri" data-v="medium" onclick="selPri('cr_pri',this)">🟡 Medium</div>
+        <div class="pri" data-v="high" onclick="selPri('cr_pri',this)">🔴 High</div>
+        <div class="pri" data-v="critical" onclick="selPri('cr_pri',this)">⚡ Urgent</div>
+      </div>
+    </div>
+
+    <div class="sdiv"><span>Change Details</span></div>
+
+    <div class="field"><label>Description of Change <span class="req">*</span></label>
+      <textarea id="cr_desc" placeholder="Clearly describe what is changing. Be specific about what was originally planned vs. what is now being requested."></textarea></div>
+
+    <div class="field"><label>Reason / Justification <span class="req">*</span></label>
+      <textarea id="cr_reason" placeholder="Why is this change necessary? What would happen if this change is NOT made?"></textarea></div>
+
+    <div class="field"><label>Impact Assessment <span class="req">*</span></label>
+      <textarea id="cr_impact" placeholder="What is the impact on: scope, timeline, budget, quality, risk, and other teams? Be specific."></textarea></div>
+
+    <div class="g2">
+      <div class="field"><label>Current Baseline (what exists today)</label>
+        <textarea id="cr_baseline" style="min-height:68px" placeholder="Original scope / date / budget / headcount..."></textarea></div>
+      <div class="field"><label>Proposed Revised Baseline</label>
+        <textarea id="cr_proposed" style="min-height:68px" placeholder="New scope / date / budget / headcount..."></textarea></div>
+    </div>
+
+    <div class="sdiv"><span>Schedule & Cost Impact</span></div>
+
+    <div class="g3">
+      <div class="field"><label>Original Go-Live Date</label><input type="date" id="cr_orig_date" /></div>
+      <div class="field"><label>Revised Go-Live Date (if applies)</label><input type="date" id="cr_new_date" /></div>
+      <div class="field"><label>Schedule Impact</label>
+        <select id="cr_sched_impact">
+          <option value="">Select</option>
+          <option>No impact</option><option>+1–2 weeks</option><option>+2–4 weeks</option>
+          <option>+1–2 months</option><option>+2+ months</option><option>TBD</option>
+        </select>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Budget Impact</label>
+        <select id="cr_budget_impact">
+          <option value="">Select</option>
+          <option>No budget impact</option><option>+&lt; $5,000</option><option>+$5k–$20k</option>
+          <option>+$20k–$50k</option><option>+$50k+</option><option>Budget reduction</option><option>TBD</option>
+        </select>
+      </div>
+      <div class="field"><label>Approval Required From</label>
+        <select id="cr_approval_level">
+          <option value="">Select</option>
+          <option>Project Manager</option><option>PMO Director</option>
+          <option>Department Head</option><option>Executive Sponsor</option>
+          <option>Steering Committee</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field"><label>Alternatives Considered</label>
+      <textarea id="cr_alts" style="min-height:68px" placeholder="What other options were considered before requesting this change?"></textarea></div>
+
+    <div class="field"><label>Supporting Documentation (optional)</label>
+      <div class="fdrop" onclick="document.getElementById('cr_file').click()">
+        <input type="file" id="cr_file" accept=".pdf,.pptx,.docx,.xlsx" onchange="fLabel(this,'cr_flbl')"/>
+        <div class="fdi">📎</div>
+        <div class="fdt" id="cr_flbl">Attach revised schedule, cost analysis, or supporting docs</div>
+        <div class="fdh">PDF, PPTX, DOCX, XLSX · max 20MB</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn" onclick="sub('change_request')">Submit Change Request <span class="arr">→</span></button>
+      <button class="btn-ghost" onclick="clr('cr_')">Clear Form</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PANEL 2 — APPLICATION SUPPORT
+════════════════════════════════════════ -->
+<div class="panel" id="p2">
+  <div class="hero">
+    <div class="eyebrow">Application Support</div>
+    <h2>Report an <span class="accent">Application Issue</span> or Incident</h2>
+    <p>Use this form to report bugs, system errors, data issues, or degraded performance in any Bomb Party business application. Support SLA: P1 = 2hrs, P2 = 8hrs, P3 = 3 days.</p>
+  </div>
+  <p class="rl"><span>*</span> Required fields</p>
+
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-ico ic-green">⚙️</div>
+      <div class="card-hd-text"><div class="ct">Incident Details</div><div class="cd">Application bugs, data errors, or performance issues</div></div>
+    </div>
+
+    <div class="g2">
+      <div class="field"><label>Your Name <span class="req">*</span></label><input id="as_name" placeholder="Full name" /></div>
+      <div class="field"><label>Your Email <span class="req">*</span></label><input type="email" id="as_email" placeholder="you@bombparty.com" /></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Business Unit / Department <span class="req">*</span></label>
+        <select id="as_dept">
+          <option value="">Select</option>
+          <option>Product</option><option>Engineering</option><option>Design</option>
+          <option>Marketing</option><option>Operations</option><option>Finance</option>
+          <option>Legal / Compliance</option><option>HR / People</option><option>Executive</option>
+        </select>
+      </div>
+      <div class="field"><label>Application / System Affected <span class="req">*</span></label>
+        <select id="as_app">
+          <option value="">Select application</option>
+          <option>Bomb Party Web App</option><option>Bomb Party Mobile (iOS)</option>
+          <option>Bomb Party Mobile (Android)</option><option>Admin Dashboard</option>
+          <option>Billing / Payments System</option><option>CRM / Salesforce</option>
+          <option>Analytics / Data Pipeline</option><option>Notification System</option>
+          <option>Auth / Identity System</option><option>API / Backend Service</option>
+          <option>Internal Operations Tool</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field"><label>Issue Type <span class="req">*</span></label>
+      <div class="rg" id="as_type">
+        <label class="ro" onclick="selR('as_type',this)"><input type="radio" name="as_type" value="Bug / Error"/> 🐛 Bug / Error</label>
+        <label class="ro" onclick="selR('as_type',this)"><input type="radio" name="as_type" value="Performance / Slowness"/> 🐢 Performance / Slowness</label>
+        <label class="ro" onclick="selR('as_type',this)"><input type="radio" name="as_type" value="Data Issue"/> 📊 Data Issue</label>
+        <label class="ro" onclick="selR('as_type',this)"><input type="radio" name="as_type" value="Outage / Unavailable"/> 🔴 Outage / Unavailable</label>
+        <label class="ro" onclick="selR('as_type',this)"><input type="radio" name="as_type" value="Access / Permissions"/> 🔒 Access / Permissions</label>
+        <label class="ro" onclick="selR('as_type',this)"><input type="radio" name="as_type" value="Configuration Error"/> ⚙️ Config Error</label>
+        <label class="ro" onclick="selR('as_type',this)"><input type="radio" name="as_type" value="Other"/> Other</label>
+      </div>
+    </div>
+
+    <div class="field"><label>Severity / Priority <span class="req">*</span></label>
+      <div class="pri-grp" id="as_pri">
+        <div class="pri" data-v="low" onclick="selPri('as_pri',this)">P3 — Low (minor, workaround exists)</div>
+        <div class="pri" data-v="medium" onclick="selPri('as_pri',this)">P2 — Medium (business impact, limited workaround)</div>
+        <div class="pri" data-v="high" onclick="selPri('as_pri',this)">P1 — High (major impact, no workaround)</div>
+        <div class="pri" data-v="critical" onclick="selPri('as_pri',this)">P0 — Critical (full outage / data loss)</div>
+      </div>
+    </div>
+
+    <div class="sdiv"><span>Issue Description</span></div>
+
+    <div class="field"><label>Summary / Title <span class="req">*</span></label>
+      <input id="as_summary" placeholder="One-line description of the issue (e.g. 'Leaderboard not loading for rooms > 50 players')" /></div>
+
+    <div class="field"><label>Detailed Description <span class="req">*</span></label>
+      <textarea id="as_detail" placeholder="Describe the issue in detail. What are you seeing? What were you trying to do? Include any error messages verbatim."></textarea></div>
+
+    <div class="g2">
+      <div class="field"><label>Steps to Reproduce <span class="req">*</span></label>
+        <textarea id="as_steps" placeholder="1. Go to...&#10;2. Click on...&#10;3. Observe..."></textarea></div>
+      <div class="field"><label>Expected vs. Actual Behavior</label>
+        <textarea id="as_expected" placeholder="Expected: The leaderboard updates in real time.&#10;Actual: Page shows a blank state after joining."></textarea></div>
+    </div>
+
+    <div class="g3">
+      <div class="field"><label>When Did It Start? <span class="req">*</span></label><input type="datetime-local" id="as_when" /></div>
+      <div class="field"><label>Environment</label>
+        <select id="as_env">
+          <option value="">Select</option>
+          <option>Production</option><option>Staging</option><option>Development</option><option>All Environments</option>
+        </select>
+      </div>
+      <div class="field"><label>How Many Users Affected?</label>
+        <select id="as_users">
+          <option value="">Select</option>
+          <option>Just me</option><option>My team (2–10)</option><option>Many users (10–100)</option>
+          <option>Large segment (100–1000)</option><option>All users</option><option>Unknown</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field"><label>Business Impact</label>
+      <textarea id="as_biz_impact" style="min-height:68px" placeholder="How is this affecting business operations, revenue, or customers? Be specific."></textarea></div>
+
+    <div class="field"><label>Workaround Available?</label>
+      <div class="rg" id="as_wk">
+        <label class="ro" onclick="selR('as_wk',this)"><input type="radio" name="as_wk" value="Yes, documented"/> ✅ Yes, documented</label>
+        <label class="ro" onclick="selR('as_wk',this)"><input type="radio" name="as_wk" value="Yes, but not ideal"/> ⚠️ Yes, but not ideal</label>
+        <label class="ro" onclick="selR('as_wk',this)"><input type="radio" name="as_wk" value="No workaround"/> ❌ No workaround</label>
+      </div>
+    </div>
+
+    <div class="field"><label>Screenshot or Log File (optional)</label>
+      <div class="fdrop" onclick="document.getElementById('as_file').click()">
+        <input type="file" id="as_file" accept="image/*,.pdf,.log,.txt,.zip" onchange="fLabel(this,'as_flbl')"/>
+        <div class="fdi">📎</div>
+        <div class="fdt" id="as_flbl">Attach screenshot, video, or log file</div>
+        <div class="fdh">PNG, JPG, MP4, LOG, ZIP · max 20MB</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn" onclick="sub('app_support')">Submit Support Ticket <span class="arr">→</span></button>
+      <button class="btn-ghost" onclick="clr('as_')">Clear Form</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PANEL 3 — ENHANCEMENT REQUEST
+════════════════════════════════════════ -->
+<div class="panel" id="p3">
+  <div class="hero">
+    <div class="eyebrow">Application Enhancement</div>
+    <h2>Request a <span class="accent">Feature or Improvement</span> to an Existing App</h2>
+    <p>Use this form to request enhancements to existing Bomb Party applications — new features, UX improvements, workflow automations, or reporting additions.</p>
+  </div>
+  <p class="rl"><span>*</span> Required fields</p>
+
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-ico ic-citron">✨</div>
+      <div class="card-hd-text"><div class="ct">Enhancement Request</div><div class="cd">Improvements to existing systems and applications</div></div>
+    </div>
+
+    <div class="g2">
+      <div class="field"><label>Requestor Name <span class="req">*</span></label><input id="en_name" placeholder="Full name" /></div>
+      <div class="field"><label>Requestor Email <span class="req">*</span></label><input type="email" id="en_email" placeholder="you@bombparty.com" /></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Application / System <span class="req">*</span></label>
+        <select id="en_app">
+          <option value="">Select application</option>
+          <option>Bomb Party Web App</option><option>Bomb Party Mobile (iOS)</option>
+          <option>Bomb Party Mobile (Android)</option><option>Admin Dashboard</option>
+          <option>Billing / Payments System</option><option>CRM / Salesforce</option>
+          <option>Analytics / Data Pipeline</option><option>Notification System</option>
+          <option>Auth / Identity System</option><option>API / Backend Service</option>
+          <option>Internal Operations Tool</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field"><label>Enhancement Type <span class="req">*</span></label>
+        <select id="en_type">
+          <option value="">Select type</option>
+          <option>New Feature</option><option>UX / UI Improvement</option>
+          <option>Workflow Automation</option><option>Reporting / Dashboard</option>
+          <option>Integration / API Connection</option><option>Performance Improvement</option>
+          <option>Configuration Change</option><option>Accessibility</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field"><label>Business Unit / Department <span class="req">*</span></label>
+      <select id="en_dept">
+        <option value="">Select</option>
+        <option>Product</option><option>Engineering</option><option>Design</option>
+        <option>Marketing</option><option>Operations</option><option>Finance</option>
+        <option>Legal / Compliance</option><option>HR / People</option>
+        <option>Executive</option><option>Cross-functional</option>
+      </select>
+    </div>
+
+    <div class="field"><label>Priority <span class="req">*</span></label>
+      <div class="pri-grp" id="en_pri">
+        <div class="pri" data-v="low" onclick="selPri('en_pri',this)">🟢 Nice-to-Have</div>
+        <div class="pri" data-v="medium" onclick="selPri('en_pri',this)">🟡 Medium</div>
+        <div class="pri" data-v="high" onclick="selPri('en_pri',this)">🔴 High (blocking work)</div>
+        <div class="pri" data-v="critical" onclick="selPri('en_pri',this)">⚡ Critical (compliance / revenue)</div>
+      </div>
+    </div>
+
+    <div class="sdiv"><span>Request Details</span></div>
+
+    <div class="field"><label>Enhancement Title <span class="req">*</span></label>
+      <input id="en_title" placeholder="Short, descriptive title for this enhancement" /></div>
+
+    <div class="field"><label>Current State — What Exists Today <span class="req">*</span></label>
+      <textarea id="en_current" placeholder="Describe how the application currently works in this area. What is the limitation or gap?"></textarea></div>
+
+    <div class="field"><label>Desired State — What You're Requesting <span class="req">*</span></label>
+      <textarea id="en_desired" placeholder="Describe what you want the application to do. Be as specific as possible about the new behavior or workflow."></textarea></div>
+
+    <div class="field"><label>Business Justification &amp; Value <span class="req">*</span></label>
+      <textarea id="en_value" placeholder="Why is this important? What business value, efficiency gain, or risk mitigation does it deliver? Include metrics or estimates where possible."></textarea></div>
+
+    <div class="g2">
+      <div class="field"><label>Who Benefits?</label>
+        <div class="cg" id="en_who">
+          <label class="co"><input type="checkbox" value="Players"/> 🎮 Players</label>
+          <label class="co"><input type="checkbox" value="Internal Teams"/> 🏢 Internal Teams</label>
+          <label class="co"><input type="checkbox" value="Creators"/> 🎨 Creators</label>
+          <label class="co"><input type="checkbox" value="Management"/> 📊 Management</label>
+          <label class="co"><input type="checkbox" value="Partners"/> 🤝 Partners</label>
+          <label class="co"><input type="checkbox" value="All"/> 🌐 All</label>
+        </div>
+      </div>
+      <div class="field"><label>Estimated Impact</label>
+        <div class="rg" id="en_impact">
+          <label class="ro" onclick="selR('en_impact',this)"><input type="radio" name="en_impact" value="Low"/> 🌱 Low</label>
+          <label class="ro" onclick="selR('en_impact',this)"><input type="radio" name="en_impact" value="Medium"/> 🌿 Medium</label>
+          <label class="ro" onclick="selR('en_impact',this)"><input type="radio" name="en_impact" value="High"/> 🌳 High</label>
+          <label class="ro" onclick="selR('en_impact',this)"><input type="radio" name="en_impact" value="Game-changer"/> 🚀 Game-changer</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="g2">
+      <div class="field"><label>Requested Delivery Date</label><input type="date" id="en_date" /></div>
+      <div class="field"><label>Estimated Effort (your guess)</label>
+        <select id="en_effort">
+          <option value="">Select</option>
+          <option>Small — hours / 1–2 days</option><option>Medium — 1–2 weeks</option>
+          <option>Large — 2–4 weeks</option><option>Very Large — 1+ month</option><option>Unknown</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field"><label>Mockup, Reference, or Prototype Link</label>
+      <input id="en_ref" placeholder="Figma link, Confluence page, ticket URL, or screenshot description..." /></div>
+
+    <div class="field"><label>Additional Notes</label>
+      <textarea id="en_notes" style="min-height:68px" placeholder="Anything else the team should know?"></textarea></div>
+
+    <div class="field"><label>Attachment (optional)</label>
+      <div class="fdrop" onclick="document.getElementById('en_file').click()">
+        <input type="file" id="en_file" accept=".pdf,.pptx,.docx,.png,.jpg,.fig" onchange="fLabel(this,'en_flbl')"/>
+        <div class="fdi">📎</div>
+        <div class="fdt" id="en_flbl">Attach mockup, screenshot, or supporting doc</div>
+        <div class="fdh">PDF, PPTX, DOCX, PNG, JPG · max 20MB</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn" onclick="sub('enhancement')">Submit Enhancement Request <span class="arr">→</span></button>
+      <button class="btn-ghost" onclick="clr('en_')">Clear Form</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PANEL 4 — RESOURCE REQUEST
+════════════════════════════════════════ -->
+<div class="panel" id="p4">
+  <div class="hero">
+    <div class="eyebrow">PMO · Resource Request</div>
+    <h2>Request <span class="accent">People, Tools, or Budget</span> for a Project</h2>
+    <p>Use this form to request headcount, vendor support, tooling, or budget allocation for a current or upcoming project. Reviewed by PMO and Finance weekly.</p>
+  </div>
+  <p class="rl"><span>*</span> Required fields</p>
+
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-ico ic-navy">👥</div>
+      <div class="card-hd-text"><div class="ct">Resource Request</div><div class="cd">Headcount, tooling, vendor, or budget</div></div>
+    </div>
+
+    <div class="g2">
+      <div class="field"><label>Requestor Name <span class="req">*</span></label><input id="rr_name" placeholder="Full name" /></div>
+      <div class="field"><label>Requestor Email <span class="req">*</span></label><input type="email" id="rr_email" placeholder="you@bombparty.com" /></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Linked Project / Initiative <span class="req">*</span></label><input id="rr_project" placeholder="Project or initiative this resource supports" /></div>
+      <div class="field"><label>Business Unit <span class="req">*</span></label>
+        <select id="rr_bu">
+          <option value="">Select</option>
+          <option>Product</option><option>Engineering</option><option>Design</option>
+          <option>Marketing</option><option>Operations</option><option>Finance</option>
+          <option>Legal / Compliance</option><option>HR / People</option><option>Executive</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field"><label>Resource Type Requested <span class="req">*</span></label>
+      <div class="cg" id="rr_types">
+        <label class="co"><input type="checkbox" value="Internal Headcount"/> 🏢 Internal Headcount</label>
+        <label class="co"><input type="checkbox" value="Contract / Freelancer"/> 🤝 Contractor / Freelancer</label>
+        <label class="co"><input type="checkbox" value="Vendor / Agency"/> 🏭 Vendor / Agency</label>
+        <label class="co"><input type="checkbox" value="Software / Tooling"/> 💻 Software / Tooling</label>
+        <label class="co"><input type="checkbox" value="Budget Allocation"/> 💰 Budget Allocation</label>
+        <label class="co"><input type="checkbox" value="Infrastructure / Cloud"/> ☁️ Infrastructure / Cloud</label>
+        <label class="co"><input type="checkbox" value="Training"/> 📚 Training</label>
+      </div>
+    </div>
+
+    <div class="field"><label>Priority <span class="req">*</span></label>
+      <div class="pri-grp" id="rr_pri">
+        <div class="pri" data-v="low" onclick="selPri('rr_pri',this)">🟢 Low</div>
+        <div class="pri" data-v="medium" onclick="selPri('rr_pri',this)">🟡 Medium</div>
+        <div class="pri" data-v="high" onclick="selPri('rr_pri',this)">🔴 High</div>
+        <div class="pri" data-v="critical" onclick="selPri('rr_pri',this)">⚡ Blocking / Urgent</div>
+      </div>
+    </div>
+
+    <div class="sdiv"><span>Resource Details</span></div>
+
+    <div class="field"><label>Description of Resource Needed <span class="req">*</span></label>
+      <textarea id="rr_desc" placeholder="Describe the specific resource(s) needed. If headcount: role, seniority, skills. If tooling: product name, tier. If budget: purpose."></textarea></div>
+
+    <div class="field"><label>Business Justification <span class="req">*</span></label>
+      <textarea id="rr_justification" placeholder="Why is this resource needed? What project deliverable or outcome does it enable? What's the risk if not approved?"></textarea></div>
+
+    <div class="g3">
+      <div class="field"><label>Quantity / Count</label><input id="rr_qty" placeholder="e.g. 2 engineers, 1 vendor, $50k" /></div>
+      <div class="field"><label>Date Needed By <span class="req">*</span></label><input type="date" id="rr_needed_by" /></div>
+      <div class="field"><label>Duration of Need</label>
+        <select id="rr_duration">
+          <option value="">Select</option>
+          <option>One-time / Ad hoc</option><option>&lt; 1 month</option><option>1–3 months</option>
+          <option>3–6 months</option><option>6–12 months</option><option>Ongoing / Permanent</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="g2">
+      <div class="field"><label>Estimated Cost / Budget Ask</label>
+        <select id="rr_cost">
+          <option value="">Select range</option>
+          <option>No cost (internal only)</option><option>&lt; $5,000</option>
+          <option>$5k – $20k</option><option>$20k – $50k</option>
+          <option>$50k – $100k</option><option>$100k+</option><option>TBD / Needs quote</option>
+        </select>
+      </div>
+      <div class="field"><label>Budget Source</label>
+        <select id="rr_budget_src">
+          <option value="">Select</option>
+          <option>Existing project budget</option><option>Departmental budget</option>
+          <option>New budget request</option><option>TBD / Unknown</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field"><label>Skills / Qualifications Required (for headcount)</label>
+      <textarea id="rr_skills" style="min-height:68px" placeholder="Required skills, experience level, tools, or certifications for the role or contractor..."></textarea></div>
+
+    <div class="field"><label>Impact if Not Approved</label>
+      <textarea id="rr_risk" style="min-height:68px" placeholder="What is the consequence to the project, timeline, or business if this resource is not approved?"></textarea></div>
+
+    <div class="field"><label>Alternatives Considered</label>
+      <textarea id="rr_alts" style="min-height:68px" placeholder="Have you explored other options? What other approaches were evaluated?"></textarea></div>
+
+    <div class="field"><label>Supporting Documentation (optional)</label>
+      <div class="fdrop" onclick="document.getElementById('rr_file').click()">
+        <input type="file" id="rr_file" accept=".pdf,.pptx,.docx,.xlsx" onchange="fLabel(this,'rr_flbl')"/>
+        <div class="fdi">📎</div>
+        <div class="fdt" id="rr_flbl">Attach SOW, vendor quote, job description, or brief</div>
+        <div class="fdh">PDF, PPTX, DOCX, XLSX · max 20MB</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn" onclick="sub('resource_request')">Submit Resource Request <span class="arr">→</span></button>
+      <button class="btn-ghost" onclick="clr('rr_')">Clear Form</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PANEL 5 — SYSTEM USER ACCESS
+════════════════════════════════════════ -->
+<div class="panel" id="p5">
+  <div class="hero">
+    <div class="eyebrow">System User Access</div>
+    <h2>Request, Modify, or <span class="accent">Revoke</span> System Access</h2>
+    <p>Use this form to provision new users, update existing access levels, or offboard departing team members across all Bomb Party systems and applications. Manager approval is required for all requests.</p>
+  </div>
+  <p class="rl"><span>*</span> Required fields</p>
+
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-ico ic-red">🔐</div>
+      <div class="card-hd-text"><div class="ct">Access Request Details</div><div class="cd">New access, modification, or revocation</div></div>
+    </div>
+
+    <div class="field"><label>Request Type <span class="req">*</span></label>
+      <div class="rg" id="ua_req_type">
+        <label class="ro" onclick="selR('ua_req_type',this)"><input type="radio" name="ua_req_type" value="New User Provisioning"/> 🆕 New User Provisioning</label>
+        <label class="ro" onclick="selR('ua_req_type',this)"><input type="radio" name="ua_req_type" value="Access Modification"/> ✏️ Access Modification</label>
+        <label class="ro" onclick="selR('ua_req_type',this)"><input type="radio" name="ua_req_type" value="Access Revocation"/> ❌ Access Revocation</label>
+        <label class="ro" onclick="selR('ua_req_type',this)"><input type="radio" name="ua_req_type" value="Temporary Access"/> ⏳ Temporary Access</label>
+        <label class="ro" onclick="selR('ua_req_type',this)"><input type="radio" name="ua_req_type" value="Role / Permission Change"/> 🔄 Role / Permission Change</label>
+      </div>
+    </div>
+
+    <div class="sdiv"><span>Requestor Info</span></div>
+
+    <div class="g2">
+      <div class="field"><label>Requestor Name (Manager / HR) <span class="req">*</span></label><input id="ua_rname" placeholder="Full name of person submitting" /></div>
+      <div class="field"><label>Requestor Email <span class="req">*</span></label><input type="email" id="ua_remail" placeholder="you@bombparty.com" /></div>
+    </div>
+
+    <div class="sdiv"><span>User Being Provisioned</span></div>
+
+    <div class="g3">
+      <div class="field"><label>First Name <span class="req">*</span></label><input id="ua_fname" placeholder="First name" /></div>
+      <div class="field"><label>Last Name <span class="req">*</span></label><input id="ua_lname" placeholder="Last name" /></div>
+      <div class="field"><label>Work Email <span class="req">*</span></label><input type="email" id="ua_email" placeholder="user@bombparty.com" /></div>
+    </div>
+
+    <div class="g3">
+      <div class="field"><label>Job Title <span class="req">*</span></label><input id="ua_title" placeholder="e.g. Senior Product Designer" /></div>
+      <div class="field"><label>Department <span class="req">*</span></label>
+        <select id="ua_dept">
+          <option value="">Select</option>
+          <option>Product</option><option>Engineering</option><option>Design</option>
+          <option>Marketing</option><option>Operations</option><option>Finance</option>
+          <option>Legal / Compliance</option><option>HR / People</option>
+          <option>Executive</option><option>Contractor / External</option>
+        </select>
+      </div>
+      <div class="field"><label>Direct Manager <span class="req">*</span></label><input id="ua_manager" placeholder="Manager's full name" /></div>
+    </div>
+
+    <div class="g2">
+      <div class="field"><label>Employment Type <span class="req">*</span></label>
+        <div class="rg" id="ua_emp">
+          <label class="ro" onclick="selR('ua_emp',this)"><input type="radio" name="ua_emp" value="Full-time"/> Full-time</label>
+          <label class="ro" onclick="selR('ua_emp',this)"><input type="radio" name="ua_emp" value="Part-time"/> Part-time</label>
+          <label class="ro" onclick="selR('ua_emp',this)"><input type="radio" name="ua_emp" value="Contractor"/> Contractor</label>
+          <label class="ro" onclick="selR('ua_emp',this)"><input type="radio" name="ua_emp" value="Vendor"/> Vendor</label>
+          <label class="ro" onclick="selR('ua_emp',this)"><input type="radio" name="ua_emp" value="Intern"/> Intern</label>
+        </div>
+      </div>
+      <div class="field"><label>Access Level Requested</label>
+        <select id="ua_access_level">
+          <option value="">Select</option>
+          <option>Read Only</option>
+          <option>Read / Write (Standard)</option>
+          <option>Elevated / Power User</option>
+          <option>Admin</option>
+          <option>Super Admin</option>
+          <option>Custom (see notes)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="sdiv"><span>Systems & Applications</span></div>
+
+    <div class="field"><label>Systems to Provision / Modify <span class="req">*</span></label>
+      <div class="cg" id="ua_systems">
+        <label class="co"><input type="checkbox" value="Google Workspace (Gmail, Drive, Calendar)"/> 📧 Google Workspace</label>
+        <label class="co"><input type="checkbox" value="Slack"/> 💬 Slack</label>
+        <label class="co"><input type="checkbox" value="Jira"/> 🎯 Jira</label>
+        <label class="co"><input type="checkbox" value="Confluence"/> 📖 Confluence</label>
+        <label class="co"><input type="checkbox" value="GitHub"/> 🐙 GitHub</label>
+        <label class="co"><input type="checkbox" value="AWS"/> ☁️ AWS</label>
+        <label class="co"><input type="checkbox" value="Figma"/> 🎨 Figma</label>
+        <label class="co"><input type="checkbox" value="Datadog"/> 📊 Datadog</label>
+        <label class="co"><input type="checkbox" value="Admin Dashboard"/> ⚙️ Admin Dashboard</label>
+        <label class="co"><input type="checkbox" value="Billing / Payments System"/> 💳 Billing System</label>
+        <label class="co"><input type="checkbox" value="CRM / Salesforce"/> 🏢 CRM / Salesforce</label>
+        <label class="co"><input type="checkbox" value="Analytics Platform"/> 📈 Analytics Platform</label>
+        <label class="co"><input type="checkbox" value="VPN"/> 🔒 VPN</label>
+        <label class="co"><input type="checkbox" value="1Password"/> 🔑 1Password</label>
+        <label class="co"><input type="checkbox" value="Zoom"/> 📹 Zoom</label>
+        <label class="co"><input type="checkbox" value="Notion"/> 📝 Notion</label>
+        <label class="co"><input type="checkbox" value="HR System"/> 👥 HR System</label>
+      </div>
+    </div>
+
+    <div class="field"><label>Other Systems Not Listed</label>
+      <input id="ua_other_sys" placeholder="Any additional systems, environments, or repositories..." /></div>
+
+    <div class="field"><label>Specific Roles, Groups, or Repos to Assign</label>
+      <textarea id="ua_roles" style="min-height:68px" placeholder="e.g. GitHub org: bombparty/mobile-team, Jira project: BP-PROD, AWS role: Developer-ReadOnly..."></textarea></div>
+
+    <div class="sdiv"><span>Timeline & Approvals</span></div>
+
+    <div class="g3">
+      <div class="field"><label>Access Start Date <span class="req">*</span></label><input type="date" id="ua_start" /></div>
+      <div class="field"><label>Access End Date (if temporary)</label><input type="date" id="ua_end" /></div>
+      <div class="field"><label>Urgency</label>
+        <select id="ua_urgency">
+          <option value="">Select</option>
+          <option>Standard (3–5 business days)</option>
+          <option>Expedited (1–2 business days)</option>
+          <option>Urgent (same day)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field"><label>Business Justification <span class="req">*</span></label>
+      <textarea id="ua_justification" placeholder="Why does this user need this level of access? What work or project does it support?"></textarea></div>
+
+    <div class="field"><label>Manager Approval Status <span class="req">*</span></label>
+      <div class="rg" id="ua_approval">
+        <label class="ro" onclick="selR('ua_approval',this)"><input type="radio" name="ua_approval" value="Approved by Manager"/> ✅ Approved by Manager</label>
+        <label class="ro" onclick="selR('ua_approval',this)"><input type="radio" name="ua_approval" value="Pending Manager Approval"/> ⏳ Pending Manager Approval</label>
+        <label class="ro" onclick="selR('ua_approval',this)"><input type="radio" name="ua_approval" value="Executive Approval Required"/> 🔒 Executive Approval Required</label>
+      </div>
+    </div>
+
+    <div class="field"><label>Additional Notes</label>
+      <textarea id="ua_notes" style="min-height:68px" placeholder="Special instructions, data sensitivity concerns, compliance notes, or offboarding steps..."></textarea></div>
+
+    <div class="actions">
+      <button class="btn" onclick="sub('user_access')">Submit Access Request <span class="arr">→</span></button>
+      <button class="btn-ghost" onclick="clr('ua_')">Clear Form</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PANEL 6 — SUBMISSIONS
+════════════════════════════════════════ -->
+<div class="panel" id="p6">
+  <div class="hero">
+    <div class="eyebrow">Session Log</div>
+    <h2>Submissions <span class="accent">Log</span> &amp; Export</h2>
+    <p>All intake submissions from this session are captured below. Export to Excel anytime — one tab per intake type, one tab with everything combined.</p>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem;flex-wrap:wrap;gap:.85rem">
+    <span id="sub-lbl" style="font-size:.74rem;color:var(--navy);font-weight:600;opacity:.55">0 submissions this session</span>
+    <div style="display:flex;gap:.7rem">
+      <button class="btn" onclick="exportXL()">⬇ Export to Excel</button>
+      <button class="btn-ghost" onclick="clearAll()">Clear All</button>
+    </div>
+  </div>
+
+  <div id="sub-container">
+    <div class="empty-st">
+      <div class="ei">📋</div>
+      <p>No submissions yet.<br>Complete any intake form and it will appear here.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── Confirmation Modal ── -->
+<div class="confirm-overlay" id="confirmModal">
+  <div class="confirm-modal">
+    <div class="confirm-top">
+      <div class="confirm-icon">✅</div>
+      <h3>Request Submitted!</h3>
+      <p id="conf-subtitle">Your request has been logged and a Jira ticket created.</p>
+    </div>
+    <div class="confirm-body">
+      <div class="confirm-ticket">
+        <div>
+          <div class="ct-label">Jira Ticket</div>
+          <div class="confirm-ticket .ct-key" id="conf-key" style="font-size:1.1rem;font-weight:700;color:var(--navy)">—</div>
+        </div>
+        <a id="conf-link" href="#" target="_blank">View in Jira →</a>
+      </div>
+      <div class="confirm-fields" id="conf-fields"></div>
+      <div class="confirm-note">
+        📧 <strong>You'll receive a notification</strong> from Jira once the ticket is assigned and updated. Keep your Jira ticket number handy for follow-ups.
+      </div>
+      <button class="confirm-close" onclick="closeConfirmation()">Done — Close</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast">
+  <div style="font-size:1.2rem">✅</div>
+  <div>
+    <div class="tt" id="t-title">Submitted</div>
+    <div class="tb" id="t-body">Sent to tech@bombparty.com</div>
+  </div>
+</div>
+
+<script>
+// ─── State ───
+let subs = [];
+
+// ─── Tabs ───
+function sw(n) {
+  document.querySelectorAll('.panel').forEach((p,i) => p.classList.toggle('active', i===n));
+  document.querySelectorAll('.tab-btn').forEach((t,i) => t.classList.toggle('active', i===n));
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// ─── Priority ───
+function selPri(gid, el) {
+  document.querySelectorAll('#'+gid+' .pri').forEach(p => p.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+// ─── Radio ───
+function selR(gid, el) {
+  document.querySelectorAll('#'+gid+' .ro').forEach(p => p.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+// ─── Checkbox visual ───
+document.addEventListener('change', e => {
+  if (e.target.type === 'checkbox') {
+    e.target.closest('.co').classList.toggle('sel', e.target.checked);
+  }
+});
+
+// ─── File label ───
+function fLabel(inp, lid) {
+  if (inp.files && inp.files[0]) document.getElementById(lid).textContent = '📎 ' + inp.files[0].name;
+}
+
+// ─── Get helpers ───
+function gv(id) { const e = document.getElementById(id); return e ? e.value.trim() : ''; }
+function gPri(gid) { const s = document.querySelector('#'+gid+' .pri.sel'); return s ? s.dataset.v : ''; }
+function gR(gid) { const s = document.querySelector('#'+gid+' .ro.sel input'); return s ? s.value : ''; }
+function gC(gid) { return Array.from(document.querySelectorAll('#'+gid+' input:checked')).map(i=>i.value).join(', '); }
+
+// ─── Collect forms ───
+function collectPR() {
+  return { type:'Project Request', requestor:gv('pr_rname'), email:gv('pr_remail'),
+    project_name:gv('pr_title'), sponsor:gv('pr_sponsor'), business_unit:gv('pr_bu'),
+    project_type:gv('pr_type'), methodology:gv('pr_method'), priority:gPri('pr_pri'),
+    problem_statement:gv('pr_problem'), goals_metrics:gv('pr_goals'),
+    in_scope:gv('pr_in'), out_of_scope:gv('pr_out'), assumptions:gv('pr_assumptions'),
+    start_date:gv('pr_start'), target_completion:gv('pr_end'), duration:gv('pr_dur'),
+    budget_range:gv('pr_budget'), team_size:gv('pr_team'), stakeholders:gv('pr_stake'),
+    risks_blockers:gv('pr_risks'), timestamp:ts() };
+}
+function collectCR() {
+  return { type:'Change Request', requestor:gv('cr_rname'), email:gv('cr_remail'),
+    project_name:gv('cr_project'), project_manager:gv('cr_pm'),
+    change_category:gR('cr_cat'), priority:gPri('cr_pri'),
+    description_of_change:gv('cr_desc'), reason_justification:gv('cr_reason'),
+    impact_assessment:gv('cr_impact'), current_baseline:gv('cr_baseline'),
+    proposed_baseline:gv('cr_proposed'), original_go_live:gv('cr_orig_date'),
+    revised_go_live:gv('cr_new_date'), schedule_impact:gv('cr_sched_impact'),
+    budget_impact:gv('cr_budget_impact'), approval_required_from:gv('cr_approval_level'),
+    alternatives_considered:gv('cr_alts'), timestamp:ts() };
+}
+function collectAS() {
+  return { type:'App Support', name:gv('as_name'), email:gv('as_email'),
+    department:gv('as_dept'), application:gv('as_app'), issue_type:gR('as_type'),
+    severity:gPri('as_pri'), summary:gv('as_summary'), detailed_description:gv('as_detail'),
+    steps_to_reproduce:gv('as_steps'), expected_vs_actual:gv('as_expected'),
+    when_started:gv('as_when'), environment:gv('as_env'), users_affected:gv('as_users'),
+    business_impact:gv('as_biz_impact'), workaround:gR('as_wk'), timestamp:ts() };
+}
+function collectEN() {
+  return { type:'Enhancement', requestor:gv('en_name'), email:gv('en_email'),
+    application:gv('en_app'), enhancement_type:gv('en_type'), department:gv('en_dept'),
+    priority:gPri('en_pri'), title:gv('en_title'), current_state:gv('en_current'),
+    desired_state:gv('en_desired'), business_value:gv('en_value'),
+    who_benefits:gC('en_who'), estimated_impact:gR('en_impact'),
+    requested_delivery:gv('en_date'), estimated_effort:gv('en_effort'),
+    reference_link:gv('en_ref'), notes:gv('en_notes'), timestamp:ts() };
+}
+function collectRR() {
+  return { type:'Resource Request', requestor:gv('rr_name'), email:gv('rr_email'),
+    linked_project:gv('rr_project'), business_unit:gv('rr_bu'),
+    resource_types:gC('rr_types'), priority:gPri('rr_pri'),
+    description:gv('rr_desc'), justification:gv('rr_justification'),
+    quantity:gv('rr_qty'), needed_by:gv('rr_needed_by'), duration:gv('rr_duration'),
+    estimated_cost:gv('rr_cost'), budget_source:gv('rr_budget_src'),
+    skills_required:gv('rr_skills'), impact_if_not_approved:gv('rr_risk'),
+    alternatives:gv('rr_alts'), timestamp:ts() };
+}
+function collectUA() {
+  return { type:'User Access', request_type:gR('ua_req_type'),
+    requestor:gv('ua_rname'), requestor_email:gv('ua_remail'),
+    first_name:gv('ua_fname'), last_name:gv('ua_lname'), work_email:gv('ua_email'),
+    job_title:gv('ua_title'), department:gv('ua_dept'), manager:gv('ua_manager'),
+    employment_type:gR('ua_emp'), access_level:gv('ua_access_level'),
+    systems_requested:gC('ua_systems'), other_systems:gv('ua_other_sys'),
+    roles_groups_repos:gv('ua_roles'),
+    access_start_date:gv('ua_start'), access_end_date:gv('ua_end'),
+    urgency:gv('ua_urgency'), business_justification:gv('ua_justification'),
+    manager_approval:gR('ua_approval'), notes:gv('ua_notes'), timestamp:ts() };
+}
+
+function ts() { return new Date().toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}); }
+
+// ─── Validation ───
+const REQ = {
+  project_request:  ['pr_rname','pr_remail','pr_title','pr_bu','pr_type','pr_problem','pr_goals'],
+  change_request:   ['cr_rname','cr_remail','cr_project','cr_desc','cr_reason','cr_impact'],
+  app_support:      ['as_name','as_email','as_dept','as_app','as_summary','as_detail','as_steps','as_when'],
+  enhancement:      ['en_name','en_email','en_app','en_type','en_dept','en_title','en_current','en_desired','en_value'],
+  resource_request: ['rr_name','rr_email','rr_project','rr_bu','rr_desc','rr_justification','rr_needed_by'],
+  user_access:      ['ua_rname','ua_remail','ua_fname','ua_lname','ua_email','ua_title','ua_dept','ua_manager','ua_start','ua_justification']
+};
+
+function validate(fk) {
+  let ok = true;
+  (REQ[fk]||[]).forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const bad = !el.value.trim();
+    el.style.borderColor = bad ? 'var(--red)' : '';
+    el.style.boxShadow   = bad ? '0 0 0 3px rgba(225,93,93,.13)' : '';
+    if (bad) ok = false;
+  });
+  return ok;
+}
+
+// ─── Submit ───
+async function sub(fk) {
+  if (!validate(fk)) { toast('Missing Required Fields', 'Please complete all required fields.', true); return; }
+
+  const MAP = {
+    project_request:  [collectPR, 'project_name', 'Project Request'],
+    change_request:   [collectCR, 'project_name', 'Change Request'],
+    app_support:      [collectAS, 'summary',       'App Support'],
+    enhancement:      [collectEN, 'title',         'Enhancement'],
+    resource_request: [collectRR, 'linked_project','Resource Request'],
+    user_access:      [collectUA, 'work_email',    'User Access']
+  };
+
+  const [fn, summaryKey, label] = MAP[fk];
+  const data = fn();
+  const summary = data[summaryKey] || label;
+  const entry = { ...data, _summary: summary, _label: label, _jira: null };
+
+  subs.push(entry);
+  updateLog();
+
+  // ── Jira ticket creation ──
+  const cfg = getJiraConfig();
+  if (cfg.domain && cfg.email && cfg.token && cfg.projectKey) {
+    entry._jira = 'loading';
+    updateLog();
+    try {
+      const ticket = await createJiraTicket(data, summary, cfg);
+      entry._jira = ticket;
+      updateLog();
+      showConfirmation(data, ticket);
+    } catch(e) {
+      entry._jira = 'error';
+      updateLog();
+      toast('Jira Error — ' + e.message, 'Request saved locally. Check your Jira config and try again.', true);
+    }
+  } else {
+    toast('Jira Not Configured', 'Click the Jira status button in the nav to set up your credentials.', true);
+  }
+}
+
+// ─── Jira: build Atlassian Document Format description ───
+function buildADF(data) {
+  const rows = Object.entries(data)
+    .filter(([k]) => !k.startsWith('_') && k !== 'timestamp' && k !== 'type')
+    .filter(([,v]) => v);
+
+  const content = rows.map(([k, v]) => ({
+    type: 'paragraph',
+    content: [
+      { type: 'text', text: k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()) + ':  ', marks:[{type:'strong'}] },
+      { type: 'text', text: String(v) }
+    ]
+  }));
+
+  // Add horizontal rule + timestamp at end
+  content.push({ type: 'rule' });
+  content.push({
+    type: 'paragraph',
+    content: [
+      { type: 'text', text: 'Submitted via BP PMO Intake Portal · ', marks:[{type:'em'}] },
+      { type: 'text', text: data.timestamp || new Date().toLocaleString(), marks:[{type:'em'}] }
+    ]
+  });
+
+  return { type:'doc', version:1, content: content.length > 1 ? content : [{type:'paragraph',content:[{type:'text',text:'No details provided.'}]}] };
+}
+
+// ─── Jira: priority map ───
+const JIRA_PRI = { low:'Low', medium:'Medium', high:'High', critical:'Highest' };
+
+async function createJiraTicket(data, summary, cfg) {
+  const issueType = cfg['type_' + data.type.toLowerCase().replace(/[\s\/]+/g,'_').replace(/[^a-z_]/g,'')] || 'Task';
+  const priority  = JIRA_PRI[data.priority] || JIRA_PRI[data.severity] || 'Medium';
+  const jiraUrl   = `https://${cfg.domain}.atlassian.net/rest/api/3/issue`;
+  const url       = cfg.proxyUrl ? `${cfg.proxyUrl}?target=${encodeURIComponent(jiraUrl)}` : jiraUrl;
+
+  const payload = {
+    fields: {
+      project:     { key: cfg.projectKey.toUpperCase() },
+      summary:     `[${data.type}] ${summary}`,
+      description: buildADF(data),
+      issuetype:   { name: issueType },
+      priority:    { name: priority }
+    }
+  };
+
+  let resp;
+  try {
+    // No Authorization header here — the Cloudflare Worker injects it from env variables
+    resp = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept':       'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+  } catch(networkErr) {
+    throw new Error('Network error — verify your proxy URL and Jira domain are correct.');
+  }
+
+  if (!resp.ok) {
+    const err = await resp.json().catch(()=>({}));
+    const msg = err.errorMessages?.[0] || Object.values(err.errors||{})[0] || `HTTP ${resp.status}`;
+    throw new Error(msg);
+  }
+
+  const result = await resp.json();
+  return { key: result.key, id: result.id, url: `https://${cfg.domain}.atlassian.net/browse/${result.key}` };
+}
+
+// ─── Jira: hardcoded default config (works for ALL users on any browser) ───
+const DEFAULT_CONFIG = {
+  domain:               'bombparty',
+  projectKey:           'PMO',
+  proxyUrl:             'https://jira-proxy.douglasf.workers.dev', // ← update to your worker URL
+  type_project_request: 'Epic',
+  type_change_request:  'Task',
+  type_app_support:     'Bug',
+  type_enhancement:     'Story',
+  type_resource_request:'Task',
+  type_user_access:     'Task'
+};
+  type_user_access:    'Task'
+};
+
+function getJiraConfig() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('bp_jira_cfg') || '{}');
+    // Merge: localStorage overrides defaults, so admin changes persist on their browser
+    // For everyone else, DEFAULT_CONFIG is used
+    return Object.keys(saved).length > 0 ? saved : DEFAULT_CONFIG;
+  }
+  catch(e) { return DEFAULT_CONFIG; }
+}
+function setJiraConfig(cfg) {
+  localStorage.setItem('bp_jira_cfg', JSON.stringify(cfg));
+}
+
+function openJiraModal() {
+  const cfg = getJiraConfig();
+  if (cfg.adminHash) {
+    document.getElementById('pw-set-note').style.display = 'none';
+    document.getElementById('pw-head-title').textContent = 'Admin Access Required';
+    document.getElementById('pw-head-sub').textContent   = 'Enter the admin password to access Jira settings';
+    document.getElementById('pw-hint').textContent       = 'Contact your PMO admin if you\'ve forgotten the password.';
+    document.getElementById('pw-btn').textContent        = 'Unlock →';
+  } else {
+    document.getElementById('pw-set-note').style.display = 'block';
+    document.getElementById('pw-head-title').textContent = 'Set Admin Password';
+    document.getElementById('pw-head-sub').textContent   = 'Protect Jira settings with a password';
+    document.getElementById('pw-hint').textContent       = 'You\'ll need this every time you update Jira settings.';
+    document.getElementById('pw-btn').textContent        = 'Set Password & Continue →';
+  }
+  document.getElementById('pw-error').textContent = '';
+  document.getElementById('pw-input').value = '';
+  document.getElementById('pwModal').classList.add('show');
+  setTimeout(() => document.getElementById('pw-input').focus(), 120);
+}
+
+async function hashPassword(pw) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function checkPassword() {
+  const input = document.getElementById('pw-input').value;
+  const err   = document.getElementById('pw-error');
+  if (!input) { err.textContent = 'Please enter a password.'; return; }
+  const cfg  = getJiraConfig();
+  const hash = await hashPassword(input);
+  if (!cfg.adminHash) {
+    if (input.length < 4) { err.textContent = 'Must be at least 4 characters.'; return; }
+    cfg.adminHash = hash;
+    setJiraConfig(cfg);
+    document.getElementById('pwModal').classList.remove('show');
+    openJiraSettings();
+  } else {
+    if (hash === cfg.adminHash) {
+      document.getElementById('pwModal').classList.remove('show');
+      openJiraSettings();
+    } else {
+      err.textContent = 'Incorrect password.';
+      const inp = document.getElementById('pw-input');
+      inp.style.borderColor = 'var(--red)';
+      inp.style.boxShadow   = '0 0 0 3px rgba(225,93,93,.13)';
+      inp.value = ''; inp.focus();
+      setTimeout(() => { inp.style.borderColor=''; inp.style.boxShadow=''; }, 1500);
+    }
+  }
+}
+
+function togglePwVis() {
+  const inp = document.getElementById('pw-input');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+function openJiraSettings() {
+  const cfg = getJiraConfig();
+  document.getElementById('cfg_domain').value   = cfg.domain    || '';
+  document.getElementById('cfg_project').value  = cfg.projectKey|| '';
+  document.getElementById('cfg_email').value    = cfg.email     || '';
+  document.getElementById('cfg_token').value    = cfg.token    || '';
+  document.getElementById('cfg_proxy').value    = cfg.proxyUrl || '';
+  ['pr','cr','as','en','rr','ua'].forEach(k => {
+    const sel = document.getElementById('cfg_type_' + k);
+    if(sel && cfg['type_'+k]) sel.value = cfg['type_'+k];
+  });
+  document.getElementById('testResult').className = 'test-result';
+  document.getElementById('testResult').textContent = '';
+  document.getElementById('jiraModal').classList.add('show');
+}
+function closeJiraModal() {
+  document.getElementById('jiraModal').classList.remove('show');
+}
+function cleanDomain(raw) {
+  return raw.trim().replace(/^https?:\/\//,'').replace(/\.atlassian\.net.*$/,'').replace(/\/.*$/,'').trim();
+}
+function saveJiraConfig() {
+  const saved = getJiraConfig();
+  const cfg = {
+    ...saved,
+    domain:     cleanDomain(document.getElementById('cfg_domain').value),
+    projectKey: document.getElementById('cfg_project').value.trim().toUpperCase(),
+    proxyUrl:   document.getElementById('cfg_proxy').value.trim().replace(/\/$/,''),
+  };
+  const typeKeyMap = { pr:'project_request', cr:'change_request', as:'app_support', en:'enhancement', rr:'resource_request', ua:'user_access' };
+  ['pr','cr','as','en','rr','ua'].forEach(k => {
+    const sel = document.getElementById('cfg_type_' + k);
+    if(sel) cfg['type_' + typeKeyMap[k]] = sel.value;
+  });
+  setJiraConfig(cfg);
+  updateJiraStatus();
+  closeJiraModal();
+  toast('Jira Config Saved', `Connected to ${cfg.domain}.atlassian.net · Project: ${cfg.projectKey}`);
+}
+async function testJiraConnection() {
+  const domain   = cleanDomain(document.getElementById('cfg_domain').value);
+  const project  = document.getElementById('cfg_project').value.trim().toUpperCase();
+  const proxyUrl = document.getElementById('cfg_proxy').value.trim().replace(/\/$/,'');
+  const res      = document.getElementById('testResult');
+  if (!domain || !project) {
+    res.className = 'test-result fail'; res.textContent = '⚠ Fill domain and project key first'; return;
+  }
+  if (!proxyUrl) {
+    res.className = 'test-result fail'; res.textContent = '⚠ Proxy URL required'; return;
+  }
+  res.className = 'test-result ok'; res.textContent = '⏳ Testing…';
+  try {
+    const jiraUrl = `https://${domain}.atlassian.net/rest/api/3/project/${project}`;
+    const url     = `${proxyUrl}?target=${encodeURIComponent(jiraUrl)}`;
+    // No Authorization header — Worker injects credentials from env variables
+    const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    if (resp.ok) {
+      const d = await resp.json();
+      res.className = 'test-result ok'; res.textContent = `✅ Connected — ${d.name}`;
+    } else if (resp.status === 401) {
+      res.className = 'test-result fail'; res.textContent = '✗ 401 — check Worker env variables (JIRA_EMAIL / JIRA_TOKEN)';
+    } else if (resp.status === 404) {
+      res.className = 'test-result fail'; res.textContent = `✗ 404 — project key "${project}" not found`;
+    } else {
+      res.className = 'test-result fail'; res.textContent = `✗ Error ${resp.status}`;
+    }
+  } catch(e) {
+    res.className = 'test-result fail'; res.textContent = '✗ Network error — check proxy URL';
+  }
+}
+function updateJiraStatus() {
+  const cfg = getJiraConfig();
+  const btn = document.getElementById('jiraStatusBtn');
+  const txt = document.getElementById('jiraStatusTxt');
+  if (cfg.domain && cfg.email && cfg.token && cfg.projectKey) {
+    btn.className = 'jira-status on';
+    txt.textContent = `Jira: ${cfg.projectKey}`;
+  } else {
+    btn.className = 'jira-status off';
+    txt.textContent = 'Jira: Not Configured';
+  }
+}
+
+// close modal on overlay click
+document.getElementById('jiraModal').addEventListener('click', function(e){ if(e.target===this) closeJiraModal(); });
+document.getElementById('confirmModal').addEventListener('click', function(e){ if(e.target===this) closeConfirmation(); });
+document.getElementById('pwModal').addEventListener('click', function(e){ if(e.target===this) document.getElementById('pwModal').classList.remove('show'); });
+
+// ─── Confirmation modal ───
+function showConfirmation(data, ticket) {
+  document.getElementById('conf-key').textContent  = ticket.key;
+  document.getElementById('conf-link').href        = ticket.url;
+  document.getElementById('conf-subtitle').textContent = `Your ${data.type} has been logged and ticket ${ticket.key} created.`;
+
+  // Show a few key summary fields
+  const SHOW = {
+    project_name:'Project', title:'Title', summary:'Summary', linked_project:'Project',
+    first_name:'Name', last_name:'', requestor:'Submitted By', name:'Submitted By',
+    priority:'Priority', severity:'Severity', department:'Department',
+    business_unit:'Business Unit', timestamp:'Submitted At'
+  };
+  const cfg = getJiraConfig();
+  const fields = [
+    { label:'Type',    val: data.type },
+    { label:'Project', val: cfg.projectKey },
+    { label:'Priority',val: data.priority || data.severity || '—' },
+    { label:'Submitted',val: data.timestamp }
+  ];
+  document.getElementById('conf-fields').innerHTML = fields.map(f => `
+    <div class="cf-item">
+      <div class="cf-label">${f.label}</div>
+      <div class="cf-val">${f.val || '—'}</div>
+    </div>`).join('');
+
+  document.getElementById('confirmModal').classList.add('show');
+}
+function closeConfirmation() {
+  document.getElementById('confirmModal').classList.remove('show');
+}
+
+// ─── Log ───
+const TC = {
+  'Project Request': 'log-type lt-proj',
+  'Change Request':  'log-type lt-cr',
+  'App Support':     'log-type lt-app',
+  'Enhancement':     'log-type lt-enh',
+  'Resource Request':'log-type lt-res',
+  'User Access':     'log-type lt-ua'
+};
+
+function updateLog() {
+  const n = subs.length;
+  document.getElementById('subCount').textContent = n;
+  document.getElementById('sub-lbl').textContent = n + ' submission' + (n!==1?'s':'') + ' this session';
+  const c = document.getElementById('sub-container');
+  if (!n) {
+    c.innerHTML = '<div class="empty-st"><div class="ei">📋</div><p>No submissions yet.<br>Complete any intake form and it will appear here.</p></div>';
+    return;
+  }
+  c.innerHTML = subs.slice().reverse().map(s => {
+    let jiraHtml = '';
+    if (s._jira === 'loading') {
+      jiraHtml = `<div class="jira-spinning"><span class="spin"></span> Creating Jira ticket…</div>`;
+    } else if (s._jira === 'error') {
+      jiraHtml = `<div class="jira-spinning" style="color:var(--red);opacity:1">⚠ Jira error — check config</div>`;
+    } else if (s._jira && s._jira.key) {
+      jiraHtml = `<a class="jira-link" href="${s._jira.url}" target="_blank">🎯 ${s._jira.key}</a>`;
+    }
+    return `
+    <div class="log-item">
+      <span class="${TC[s.type]||'log-type'}">${s.type}</span>
+      <div>
+        <div class="log-sum">${s._summary}</div>
+        <div class="log-meta">${s.email||s.requestor_email||''}</div>
+        ${jiraHtml}
+      </div>
+      <div class="log-time">${s.timestamp}</div>
+    </div>`;
+  }).join('');
+}
+
+// ─── Excel Export ───
+function exportXL() {
+  if (!subs.length) { toast('Nothing to Export', 'Submit at least one form first.', true); return; }
+  const wb = XLSX.utils.book_new();
+
+  function toRows(arr) {
+    return arr.map(s => {
+      const r = {};
+      Object.entries(s).forEach(([k,v]) => {
+        if (!k.startsWith('_')) r[k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())] = v||'';
+      });
+      return r;
+    });
+  }
+
+  // All
+  const wsAll = XLSX.utils.json_to_sheet(toRows(subs));
+  wsAll['!cols'] = Array(40).fill({wch:30});
+  XLSX.utils.book_append_sheet(wb, wsAll, 'All Submissions');
+
+  // Per type
+  const groups = {};
+  subs.forEach(s => { (groups[s.type] = groups[s.type]||[]).push(s); });
+  Object.entries(groups).forEach(([t, rows]) => {
+    const ws = XLSX.utils.json_to_sheet(toRows(rows));
+    ws['!cols'] = Array(40).fill({wch:30});
+    XLSX.utils.book_append_sheet(wb, ws, t.substring(0,31));
+  });
+
+  const d = new Date().toISOString().split('T')[0];
+  XLSX.writeFile(wb, `BP_PMO_Intake_${d}.xlsx`);
+  toast('Excel Exported', `BP_PMO_Intake_${d}.xlsx saved.`);
+}
+
+// ─── Clear ───
+function clr(pfx) {
+  document.querySelectorAll(`[id^="${pfx}"]`).forEach(el => {
+    if (el.tagName==='INPUT' && el.type!=='file' && el.type!=='radio' && el.type!=='checkbox') el.value='';
+    if (el.tagName==='SELECT') el.selectedIndex=0;
+    if (el.tagName==='TEXTAREA') el.value='';
+    el.style.borderColor=''; el.style.boxShadow='';
+  });
+  document.querySelectorAll('.pri.sel,.ro.sel,.co.sel').forEach(e=>e.classList.remove('sel'));
+  document.querySelectorAll('input[type=checkbox],input[type=radio]').forEach(e=>e.checked=false);
+}
+function clearAll() {
+  if (!subs.length) return;
+  if (!confirm('Clear all session submissions?')) return;
+  subs=[]; updateLog();
+}
+
+// ─── Toast ───
+function toast(title, body, err=false) {
+  const t = document.getElementById('toast');
+  document.getElementById('t-title').textContent = title;
+  document.getElementById('t-body').textContent  = body;
+  t.style.background = err ? 'var(--red)' : 'var(--navy)';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 4500);
+}
+
+// ─── Init ───
+document.getElementById('navDate').textContent = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+document.querySelectorAll('input[type=date]').forEach(el => { if(!el.value) el.value = new Date().toISOString().split('T')[0]; });
+updateJiraStatus();
+</script>
+</body>
+</html>
